@@ -1,0 +1,21 @@
+services:
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  app:
+    build: .
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: redis
+
+  tests:
+    build: .
+    profiles: ["test"]
+    entrypoint: ["python", "-m", "unittest", "-v"]
